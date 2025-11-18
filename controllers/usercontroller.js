@@ -50,6 +50,9 @@ const login = async(req,res)=>{
           })
          res.cookie('token', token,{
             httpOnly: true,
+            secure: true,
+            samSite: "none",
+            path: "/",
            maxAge: 30 * 24 * 60 * 60 * 1000
          })
         return res.status(200).json({ status: true, message: "User registered successfully", token: token,role:existingEmail.role, message:"logged successfully" });
