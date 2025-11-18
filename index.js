@@ -21,7 +21,7 @@ const app = express()
   
 app.use (express.json())
 app.use(cors({
-    origin: "https://ecom-frontend-seven-rose.vercel.app/",
+    origin: "https://ecom-frontend-seven-rose.vercel.app",
     credentials: true
 }));
 app.use(cookieparser())
