@@ -1,10 +1,13 @@
 const jwt = require('jsonwebtoken')
+require("dotenv").config()
+
+const tokenn = process.env.TOKEN
 
 const authmiddleware = (req,res,next)=>{
     try{
         const token = req.cookies?.token
         if(!token) return res.status(400).json({status: "false", message:"token expire"})
-    const verify = jwt.verify(token, "hjfitn")
+    const verify = jwt.verify(token, tokenn)
     if(!verify) return res.status(400).json({message: "token not verfied"})
      req.user = verify
     next()

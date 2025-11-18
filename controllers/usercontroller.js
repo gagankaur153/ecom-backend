@@ -2,6 +2,9 @@ const bcrypt = require('bcrypt')
 const ProductUser = require('../models/user');
 const jwt = require ('jsonwebtoken')
 const cookie = require('cookie-parser')
+require("dotenv").config()
+
+const tokenn = process.env.TOKEN
 
 // register
 const register = async(req,res)=>{
@@ -42,7 +45,7 @@ const login = async(req,res)=>{
         if(!comparePassword) return res.status(400).json({ message: "Invalid credentials" });
 
         const token = jwt.sign( {id: existingEmail._id,
-          email:existingEmail.email, username:existingEmail.username, role:existingEmail.role}, "hjfitn",{
+          email:existingEmail.email, username:existingEmail.username, role:existingEmail.role}, tokenn,{
             expiresIn: '30d'
           })
          res.cookie('token', token,{
