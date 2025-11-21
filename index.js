@@ -20,11 +20,23 @@ const app = express()
 
   
 app.use (express.json())
+app.use(cookieparser())
+const allowedOrigins= [
+   "https://ecom-frontend-seven-rose.vercel.app",
+   "http://localhost:5173"
+]
 app.use(cors({
-    origin: "https://ecom-frontend-seven-rose.vercel.app",
+    origin: function(origin, callback){
+        if(!origin) return callback(null, true); // Postman या server-to-server requests के लिए
+        if(allowedOrigins.includes(origin)){
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"), false);
+        }
+    },
     credentials: true
 }));
-app.use(cookieparser())
+
 
 // user route
 app.use("/api",useroute)

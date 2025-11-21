@@ -32,13 +32,13 @@ const getallproduct = async(req,res)=>{
         let searchcreteria = {}
         if(search){
             searchcreteria = {
-                title:{
-                    $regex : search,
-                    $options : "i"
-                }
+                $or: [
+                    { category: { $regex: search, $options: "i" } },
+                    { title: { $regex: search, $options: "i" } }
+                  ]
             }
         }
-        const getallproduct = await Products.find(searchcreteria)
+        const getallproduct = await Products.find(searchcreteria).sort({createdAt: -1})
         return res.status(200).json({status: true,data:getallproduct })
 
     }
@@ -69,6 +69,7 @@ const updateproduct = async(req,res)=>{
         const checkuser = await ProductUser.findById(userid)
         if(checkuser?.role == "user") return res.status(400).json({status: false, message: "you are not eligible to update book"})
         const body = req.body || {}
+        if(!body.category ||!body?.title || !body?.price || !body.description) return res.status(400).json({status: false, message: "All fields are required"})
         const image = req.file ? req.file?.path : checkuser?.image
         const payload = {
             category: body.category,
