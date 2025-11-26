@@ -20,7 +20,16 @@ const register = async(req,res)=>{
     
         const existingEmail = await ProductUser.findOne({ email });
         if (existingEmail) return res.status(400).json({ status: false, message: "Email already exists" });
-    
+        const emailregex = /^[a-z0-9_#%&]+@gmail\.com$/
+        const emailmatch = emailregex.test(email)
+        if(!emailmatch) {
+          return res.status(400).json({status: false, message: "emailformat is yourgmail@gmail.com"})
+        }
+        const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,12}$/
+        const match = regex.test(password)
+    if(!match){
+      return res.status(400).json({ status: true, message: "password length is minimum 8 character maximum 12 character one special character one numeric one capital character include" });
+    }
         const hashedPassword = await bcrypt.hash(password, 10);
     
         const newUser = new ProductUser({ username, email, password: hashedPassword });
