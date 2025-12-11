@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,11 +16,11 @@ exports.deleteproduct = exports.updateproduct = exports.getsingleproduct = expor
 const product_1 = __importDefault(require("../models/product"));
 const user_1 = __importDefault(require("../models/user"));
 // add Product
-const addproduct = async (req, res) => {
+const addproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
-        const checkuser = await user_1.default.findById(userid);
+        const checkuser = yield user_1.default.findById(userid);
         if ((checkuser === null || checkuser === void 0 ? void 0 : checkuser.role) == "user")
             return res.status(400).json({ status: false, message: "you are not eligible to add book" });
         const body = req.body || {};
@@ -25,16 +34,16 @@ const addproduct = async (req, res) => {
             description: body.description,
             image: image
         });
-        await payload.save();
+        yield payload.save();
         return res.status(200).json({ status: true, data: payload, message: "product added successfully" });
     }
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.addproduct = addproduct;
 // get all products
-const getallproduct = async (req, res) => {
+const getallproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const search = req.query.search || "";
         let searchcreteria = {};
@@ -46,19 +55,19 @@ const getallproduct = async (req, res) => {
                 ]
             };
         }
-        const getallproduct = await product_1.default.find(searchcreteria).sort({ createdAt: -1 });
+        const getallproduct = yield product_1.default.find(searchcreteria).sort({ createdAt: -1 });
         return res.status(200).json({ status: true, data: getallproduct });
     }
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.getallproduct = getallproduct;
 // get single product
-const getsingleproduct = async (req, res) => {
+const getsingleproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { productid } = req.params;
-        const getoneproduct = await product_1.default.findById(productid);
+        const getoneproduct = yield product_1.default.findById(productid);
         if (!getoneproduct)
             return res.status(400).json({ status: false, message: "id not ofund" });
         return res.status(200).json({ status: true, data: getoneproduct });
@@ -66,15 +75,15 @@ const getsingleproduct = async (req, res) => {
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.getsingleproduct = getsingleproduct;
 // update Product
-const updateproduct = async (req, res) => {
+const updateproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const { productid } = req.params;
-        const checkuser = await user_1.default.findById(userid);
+        const checkuser = yield user_1.default.findById(userid);
         if ((checkuser === null || checkuser === void 0 ? void 0 : checkuser.role) == "user")
             return res.status(400).json({ status: false, message: "you are not eligible to update book" });
         if (!checkuser)
@@ -90,19 +99,19 @@ const updateproduct = async (req, res) => {
             description: body.description,
             image: image
         };
-        const update = await product_1.default.findByIdAndUpdate(productid, payload, { new: true });
+        const update = yield product_1.default.findByIdAndUpdate(productid, payload, { new: true });
         return res.status(200).json({ status: true, data: update, message: "product update successfully" });
     }
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.updateproduct = updateproduct;
 // delete product
-const deleteproduct = async (req, res) => {
+const deleteproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { productid } = req.params;
-        const deleteproduct = await product_1.default.findByIdAndDelete(productid);
+        const deleteproduct = yield product_1.default.findByIdAndDelete(productid);
         if (!deleteproduct)
             return res.status(400).json({ status: false, message: "id not ofund" });
         return res.status(200).json({ status: true, data: deleteproduct, message: "product delete successfully" });
@@ -110,5 +119,5 @@ const deleteproduct = async (req, res) => {
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.deleteproduct = deleteproduct;

@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -11,15 +20,15 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const tokenn = process.env.TOKEN;
 // register
-const register = async (req, res) => {
+const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { username, email, password } = req.body || {};
         if (!username || !email || !password)
             return res.status(400).json({ status: false, message: "All fields are required" });
-        const existingUser = await user_1.default.findOne({ username });
+        const existingUser = yield user_1.default.findOne({ username });
         if (existingUser)
             return res.status(400).json({ status: false, message: "Username already exists" });
-        const existingEmail = await user_1.default.findOne({ email });
+        const existingEmail = yield user_1.default.findOne({ email });
         if (existingEmail)
             return res.status(400).json({ status: false, message: "Email already exists" });
         const emailregex = /^[a-z0-9_#%&]+@gmail\.com$/;
@@ -32,26 +41,26 @@ const register = async (req, res) => {
         if (!match) {
             return res.status(400).json({ status: true, message: "password length is minimum 8 character maximum 12 character one special character one numeric one capital letter include" });
         }
-        const hashedPassword = await bcrypt_1.default.hash(password, 10);
+        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         const newUser = new user_1.default({ username, email, password: hashedPassword });
-        await newUser.save();
+        yield newUser.save();
         return res.status(200).json({ status: true, message: "User registered successfully", data: newUser });
     }
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.register = register;
 // login
-const login = async (req, res) => {
+const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body || {};
         if (!email || !password)
             return res.status(400).json({ status: false, message: "All fields are required" });
-        const existingEmail = await user_1.default.findOne({ email });
+        const existingEmail = yield user_1.default.findOne({ email });
         if (!existingEmail)
             return res.status(400).json({ status: false, message: "Email not registered" });
-        const comparePassword = await bcrypt_1.default.compare(password, existingEmail.password);
+        const comparePassword = yield bcrypt_1.default.compare(password, existingEmail.password);
         if (!comparePassword)
             return res.status(400).json({ message: "Invalid credentials" });
         const token = jsonwebtoken_1.default.sign({
@@ -73,10 +82,10 @@ const login = async (req, res) => {
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.login = login;
 // get profile
-const getprofile = async (req, res) => {
+const getprofile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userinfo = req.user;
         return res.status(200).json({ status: true, data: userinfo });
@@ -84,26 +93,26 @@ const getprofile = async (req, res) => {
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.getprofile = getprofile;
 // get all user
-const alluser = async (req, res) => {
+const alluser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let alluser = await user_1.default.find().populate("address").sort({ createdAt: -1 });
+        let alluser = yield user_1.default.find().populate("address").sort({ createdAt: -1 });
         alluser = alluser.filter((user) => user.role !== "admin");
         return res.status(200).json({ status: true, data: alluser });
     }
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
     }
-};
+});
 exports.alluser = alluser;
 // logout
-const logout = async (req, res) => {
+const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
-        const logout = await user_1.default.findById(userid);
+        const logout = yield user_1.default.findById(userid);
         if (!logout)
             return res.status(400).json({ status: "false", message: "id not found" });
         res.clearCookie('token', {
@@ -119,5 +128,5 @@ const logout = async (req, res) => {
         console.log(err);
         return res.status(500).json({ status: false, message: err });
     }
-};
+});
 exports.logout = logout;
