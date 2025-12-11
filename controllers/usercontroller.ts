@@ -107,6 +107,7 @@ const logout = async (req: Request, res: Response) => {
       secure: true,
       sameSite: "none",
       path: "/",
+      domian: process.env.COOKIE_DOMAIN || undefined,
     }
     )
     return res.status(200).json({ status: true, message: "logout sucessfully" });
