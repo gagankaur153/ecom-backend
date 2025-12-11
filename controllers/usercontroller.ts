@@ -29,7 +29,7 @@ const register = async (req: Request, res: Response) => {
     const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,12}$/
     const match = regex.test(password)
     if (!match) {
-      return res.status(400).json({ status: true, message: "password length is minimum 8 character maximum 12 character one special character one numeric one capital character include" });
+      return res.status(400).json({ status: true, message: "password length is minimum 8 character maximum 12 character one special character one numeric one capital letter include" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -104,6 +104,9 @@ const logout = async (req: Request, res: Response) => {
     if (!logout) return res.status(400).json({ status: "false", message: "id not found" })
     res.clearCookie('token', {
       httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
     }
     )
     return res.status(200).json({ status: true, message: "logout sucessfully" });

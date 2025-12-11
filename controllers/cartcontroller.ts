@@ -12,7 +12,6 @@ const addcart = async (req: Request, res: Response) => {
         //    console.log(productid)
         const finduser = await ProductUser.findById(userid)
         const product = await Products.findById(productid)
-        //    console.log(findproduct?.price)
         if (!finduser) return res.status(400).json({ status: "false", message: "userid not found" })
         if (finduser.role == "admin") return res.status(400).json({ status: "false", message: "you are elegible to add cart because your role is admin" })
         if (!product) return res.status(400).json({ status: "false", message: "product not found" })
