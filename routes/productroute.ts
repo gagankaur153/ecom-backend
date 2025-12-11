@@ -1,7 +1,7 @@
-const express = require('express')
+import express from 'express'
 const { addproduct, getallproduct, updateproduct, getsingleproduct, deleteproduct } = require('../controllers/productcontroller')
-const cloudinaryfileuploader = require('../Middleware/cloudinary')
-const authmiddleware = require('../Middleware/usermiddleware')
+import {cloudinaryfileuploader} from '../Middleware/cloudinary'
+import {authmiddleware} from '../Middleware/usermiddleware'
 const router = express.Router()
 
 router.post('/addproduct', authmiddleware, cloudinaryfileuploader.single("image"), addproduct)
@@ -10,4 +10,4 @@ router.get('/singleproduct/:productid', getsingleproduct)
 router.put('/updateproduct/:productid', authmiddleware, authmiddleware, cloudinaryfileuploader.single("image"), updateproduct)
 router.delete('/deleteproduct/:productid', authmiddleware, deleteproduct)
 
-module.exports = router
+export default router
