@@ -1,0 +1,206 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.updateAllProduct = exports.deletecart = exports.quantityincrease = exports.quantitydecrease = exports.allcart = exports.addcart = void 0;
+const user_1 = __importDefault(require("../models/user"));
+const product_1 = __importDefault(require("../models/product"));
+const cart_1 = __importDefault(require("../models/cart"));
+// product add to cart
+const addcart = async (req, res) => {
+    var _a;
+    try {
+        const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const { productid } = req.params;
+        //    console.log(productid)
+        const finduser = await user_1.default.findById(userid);
+        const product = await product_1.default.findById(productid);
+        if (!finduser)
+            return res.status(400).json({ status: "false", message: "userid not found" });
+        if (finduser.role == "admin")
+            return res.status(400).json({ status: "false", message: "you are elegible to add cart because your role is admin" });
+        if (!product)
+            return res.status(400).json({ status: "false", message: "product not found" });
+        //    check exist product or not
+        let cart = await cart_1.default.findOne({ user: userid });
+        if (!cart) {
+            cart = new cart_1.default({
+                user: userid,
+                item: [
+                    {
+                        productid: productid,
+                        price: product.price,
+                        quantity: 1,
+                        image: product.image
+                    }
+                ],
+                totalamount: product.price,
+                totalquantity: 1,
+            });
+            await cart.save();
+            await user_1.default.findByIdAndUpdate(userid, { $push: { cart: cart._id } }, { new: true });
+            return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
+        }
+        const itemindex = cart.item.findIndex((itemm) => itemm.productid.toString() === productid);
+        if (itemindex > -1) {
+            cart.item[itemindex].quantity += 1;
+            cart.item[itemindex].price = product.price * cart.item[itemindex].quantity;
+        }
+        else {
+            cart.item.push({
+                productid: productid,
+                price: product.price,
+                quantity: 1,
+                image: product.image,
+            });
+            cart.totalamount = cart.item.reduce((acc, items) => acc + items.price, 0);
+            cart.totalquantity = cart.item.reduce((acc, items) => acc + items.quantity, 0);
+            await cart.save();
+            return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
+        }
+        cart.totalamount = cart.item.reduce((acc, items) => acc + items.price, 0);
+        cart.totalquantity = cart.item.reduce((acc, items) => acc + items.quantity, 0);
+        if (isNaN(cart.totalamount)) {
+            throw new Error("total amount is invalid(NAN)");
+        }
+        await cart.save();
+        return res.status(200).json({ status: true, data: cart, message: "item increase to cart" });
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ status: false, message: err.message });
+    }
+};
+exports.addcart = addcart;
+// get all cart
+const allcart = async (req, res) => {
+    var _a;
+    try {
+        const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        if (!userid)
+            return res.status(400).json({ status: false, message: "id not found" });
+        const finduser = await cart_1.default.findOne({ user: userid }).populate("item.productid").populate("user.address");
+        if (!finduser)
+            return res.status(400).json({ status: false, message: "cart is empty" });
+        return res.status(200).json({ status: true, data: finduser });
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ status: false, message: err.message });
+    }
+};
+exports.allcart = allcart;
+// quantity decrease
+const quantitydecrease = async (req, res) => {
+    var _a, _b, _c, _d;
+    try {
+        const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const { productid } = req.params;
+        if (!productid)
+            return res.status(400).json({ status: false, message: "product id not found" });
+        const newuser = await user_1.default.findById(userid).select("cart");
+        const finduser = await cart_1.default.findOne({ user: userid }).populate("item.productid");
+        console.log(finduser);
+        if (!finduser)
+            return res.status(400).json({ status: false, message: "id not found" });
+        const checkproduct = finduser.item.find((items) => items.productid._id.toString() === productid);
+        if (!checkproduct)
+            return res.status(400).json({ status: "true", message: "product not match" });
+        if (checkproduct.quantity > 1) {
+            checkproduct.quantity -= 1;
+            checkproduct.price = (checkproduct === null || checkproduct === void 0 ? void 0 : checkproduct.quantity) * ((_b = checkproduct === null || checkproduct === void 0 ? void 0 : checkproduct.productid) === null || _b === void 0 ? void 0 : _b.price);
+        }
+        else {
+            finduser.item = finduser.item.filter((item) => item.productid._id.toString() !== productid);
+            await user_1.default.findByIdAndUpdate(userid, { $pull: { cart: finduser._id } }, { new: true });
+        }
+        console.log("totalamount", finduser.totalamount);
+        finduser.totalamount = (_c = finduser === null || finduser === void 0 ? void 0 : finduser.item) === null || _c === void 0 ? void 0 : _c.reduce((acc, i) => acc + i.price, 0);
+        finduser.totalquantity = (_d = finduser === null || finduser === void 0 ? void 0 : finduser.item) === null || _d === void 0 ? void 0 : _d.reduce((acc, i) => acc + i.quantity, 0);
+        await finduser.save();
+        return res.status(200).json({ status: "true", data: finduser, newuser });
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ status: false, message: err.message });
+    }
+};
+exports.quantitydecrease = quantitydecrease;
+// quantity increase
+const quantityincrease = async (req, res) => {
+    var _a, _b, _c, _d;
+    try {
+        const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const { productid } = req.params;
+        if (!productid)
+            return res.status(400).json({ status: false, message: "product id not found" });
+        const finduser = await cart_1.default.findOne({ user: userid }).populate("item.productid");
+        if (!finduser)
+            return res.status(400).json({ status: false, message: "id not found" });
+        const checkproduct = finduser.item.find((items) => items.productid._id.toString() === productid);
+        if (!checkproduct)
+            return res.status(400).json({ status: "true", message: "product not match" });
+        if (checkproduct.quantity >= 1) {
+            checkproduct.quantity += 1;
+            checkproduct.price = (checkproduct === null || checkproduct === void 0 ? void 0 : checkproduct.quantity) * ((_b = checkproduct === null || checkproduct === void 0 ? void 0 : checkproduct.productid) === null || _b === void 0 ? void 0 : _b.price);
+        }
+        finduser.totalamount = (_c = finduser === null || finduser === void 0 ? void 0 : finduser.item) === null || _c === void 0 ? void 0 : _c.reduce((acc, i) => acc + i.price, 0);
+        finduser.totalquantity = (_d = finduser === null || finduser === void 0 ? void 0 : finduser.item) === null || _d === void 0 ? void 0 : _d.reduce((acc, i) => acc + i.quantity, 0);
+        await finduser.save();
+        return res.status(200).json({ status: "true", data: finduser });
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ status: false, message: err.message });
+    }
+};
+exports.quantityincrease = quantityincrease;
+// delete per product
+const deletecart = async (req, res) => {
+    var _a, _b, _c;
+    try {
+        const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const { productid } = req.params;
+        const newuser = await user_1.default.findById(userid).select("cart");
+        const removeproduct = await cart_1.default.findOne({ user: userid });
+        if (removeproduct) {
+            removeproduct.item = await removeproduct.item.filter((details) => details.productid.toString() !== productid);
+            // await ProductUser.findByIdAndUpdate(userid, {$pull: {cart:removeproduct._id}},{new:true})
+        }
+        if (!removeproduct)
+            return res.status(400).json({ message: "product not found" });
+        removeproduct.totalamount = (_b = removeproduct === null || removeproduct === void 0 ? void 0 : removeproduct.item) === null || _b === void 0 ? void 0 : _b.reduce((acc, i) => acc + i.price, 0);
+        removeproduct.totalquantity = (_c = removeproduct === null || removeproduct === void 0 ? void 0 : removeproduct.item) === null || _c === void 0 ? void 0 : _c.reduce((acc, i) => acc + i.quantity, 0);
+        await removeproduct.save();
+        // const removeproduct = await ProductUser.findByIdAndUpdate(userid, {$set: {cart:[]}}, {new:true})
+        // if(!removeproduct) return res.status(400).json({status:"false", message: "id not found"})
+        return res.status(200).json({ sttaus: "true", message: "cart delete", data: removeproduct, newuser });
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ status: false, message: err.message });
+    }
+};
+exports.deletecart = deletecart;
+// delete all product
+const updateAllProduct = async (req, res) => {
+    var _a;
+    try {
+        const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        const clearcart = await cart_1.default.findOneAndUpdate({ user: userid }, { $set: { item: [], totalamount: 0, totalquantity: 0 } });
+        if (!clearcart) {
+            return res.status(400).json({ status: "false", message: "cart not find" });
+        }
+        const usercart = await user_1.default.findByIdAndUpdate(userid, { $set: { cart: [] } }, { new: true });
+        if (!usercart) {
+            return res.status(400).json({ status: "false", message: "user cart not find" });
+        }
+        return res.status(200).json({ status: "true", data: clearcart, message: "cart is empty" });
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json({ status: false, message: err.message });
+    }
+};
+exports.updateAllProduct = updateAllProduct;
