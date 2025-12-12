@@ -74,7 +74,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             secure: true,
             sameSite: "none",
             path: "/",
-            domain: ".ecom-frontend-seven-rose.vercel.app/"
+            domain: ".ecom-frontend-seven-rose.vercel.app"
         });
         return res.status(200).json({ status: true, message: "User registered successfully", token: token, role: existingEmail.role });
     }
@@ -119,7 +119,7 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             secure: true,
             sameSite: "none",
             path: "/",
-            domain: ".ecom-frontend-seven-rose.vercel.app/"
+            domain: ".ecom-frontend-seven-rose.vercel.app"
         });
         return res.status(200).json({ status: true, message: "logout sucessfully" });
     }
