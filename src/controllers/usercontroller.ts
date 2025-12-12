@@ -65,7 +65,7 @@ const login = async (req: Request, res: Response) => {
       secure: true,
       sameSite: "none",
       path: "/",
-      domian: process.env.COOKIE_DOMAIN || undefined,
+      domainn: process.env.COOKIE_DOMAIN || undefined,
       maxAge: 30 * 24 * 60 * 60 * 1000
     } as any)
     return res.status(200).json({ status: true, message: "User registered successfully", token: token, role: existingEmail.role });
@@ -108,7 +108,7 @@ const logout = async (req: Request, res: Response) => {
       secure: true,
       sameSite: "none",
       path: "/",
-      domian: process.env.COOKIE_DOMAIN || undefined,
+      domain: process.env.COOKIE_DOMAIN || undefined,
     } as any
     )
     return res.status(200).json({ status: true, message: "logout sucessfully" });
