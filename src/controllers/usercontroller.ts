@@ -58,15 +58,23 @@ const login = async (req: Request, res: Response) => {
       id: existingEmail._id,
       email: existingEmail.email, username: existingEmail.username, role: existingEmail.role
     }, tokenn, {
-      expiresIn: '30d'
+      expiresIn: '7d'
     })
     res.cookie('token', token, {
       httpOnly: true,
       secure: true,
       sameSite: "none",
       path: "/",
-      domain: ".ecom-frontend-seven-rose.vercel.app"
+      maxAge: 7 * 60 * 60 * 1000,
     } )
+
+  //   res.cookie('token', token,{
+  //     httpOnly: true,
+  //     secure: false,
+  //     sameSite: "none",
+  //     path: "/",
+  //    maxAge:  7 * 60 * 60 * 1000
+  //  })
     return res.status(200).json({ status: true, message: "User registered successfully", token: token, role: existingEmail.role });
 
   } catch (err: any) {
@@ -107,7 +115,6 @@ const logout = async (req: Request, res: Response) => {
       secure: true,
       sameSite: "none",
       path: "/",
-      domain: ".ecom-frontend-seven-rose.vercel.app"
     }
     )
     return res.status(200).json({ status: true, message: "logout sucessfully" });
