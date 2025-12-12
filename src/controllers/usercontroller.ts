@@ -65,7 +65,7 @@ const login = async (req: Request, res: Response) => {
       secure: true,
       sameSite: "none",
       path: "/",
-      domain: ".ecom-frontend-seven-rose.vercel.app/"
+      domain: ".ecom-frontend-seven-rose.vercel.app"
     } )
     return res.status(200).json({ status: true, message: "User registered successfully", token: token, role: existingEmail.role });
 
@@ -107,7 +107,7 @@ const logout = async (req: Request, res: Response) => {
       secure: true,
       sameSite: "none",
       path: "/",
-      domain: ".ecom-frontend-seven-rose.vercel.app/"
+      domain: ".ecom-frontend-seven-rose.vercel.app"
     }
     )
     return res.status(200).json({ status: true, message: "logout sucessfully" });
