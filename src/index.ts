@@ -48,7 +48,7 @@ app.use("/cart", cartroute)
 app.use("/payment", paymentroute)
 app.use('/address', addressroute)
 
-
+console.log("token change")
 mongoose.connect(process.env.CONNECT!)
     .then(() => { console.log("mongoose connected") })
     .catch(() => { console.log("not connected") })

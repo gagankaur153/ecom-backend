@@ -2,14 +2,17 @@ import ProductUser from "../models/user";
 import Products from "../models/product";
 import Carts from "../models/cart";
 import { Request, Response } from 'express'
-
+//recall function
+const recall = ((cart: any)=> {
+    cart.totalquantity = cart.item.reduce((acc: any,i: any)=> acc + i.quantity,0)
+    cart.totalamount = cart.item.reduce((acc: any,i: any)=> acc + i.price,0)
+})
 
 // product add to cart
 const addcart = async (req: Request, res: Response) => {
     try {
         const userid = req.user?.id
         const { productid } = req.params
-        //    console.log(productid)
         const finduser = await ProductUser.findById(userid)
         const product = await Products.findById(productid)
         if (!finduser) return res.status(400).json({ status: "false", message: "userid not found" })
@@ -50,16 +53,11 @@ const addcart = async (req: Request, res: Response) => {
                 quantity: 1,
                 image: product.image,
             })
-            cart.totalamount = cart.item.reduce((acc: any, items: any) => acc + items.price, 0)
-            cart.totalquantity = cart.item.reduce((acc: any, items: any) => acc + items.quantity, 0)
+           recall(cart)
             await cart.save()
             return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
         }
-        cart.totalamount = cart.item.reduce((acc: any, items: any) => acc + items.price, 0)
-        cart.totalquantity = cart.item.reduce((acc: any, items: any) => acc + items.quantity, 0)
-        if (isNaN(cart.totalamount)) {
-            throw new Error("total amount is invalid(NAN)")
-        }
+        recall(cart)
 
         await cart.save()
         return res.status(200).json({ status: true, data: cart, message: "item increase to cart" });
@@ -94,7 +92,6 @@ const quantitydecrease = async (req: Request, res: Response) => {
 
         const newuser = await ProductUser.findById(userid).select("cart")
         const finduser = await Carts.findOne({ user: userid }).populate("item.productid")
-        console.log(finduser)
 
         if (!finduser) return res.status(400).json({ status: false, message: "id not found" })
 
@@ -113,8 +110,7 @@ const quantitydecrease = async (req: Request, res: Response) => {
             await ProductUser.findByIdAndUpdate(userid, { $pull: { cart: finduser._id } }, { new: true })
         }
         console.log("totalamount", finduser.totalamount)
-        finduser.totalamount = finduser?.item?.reduce((acc: any, i: any) => acc + i.price, 0)
-        finduser.totalquantity = finduser?.item?.reduce((acc: any, i: any) => acc + i.quantity, 0)
+        recall(finduser)
         await finduser.save()
         return res.status(200).json({ status: "true", data: finduser, newuser })
     }
@@ -147,8 +143,7 @@ const quantityincrease = async (req: Request, res: Response) => {
 
         }
 
-        finduser.totalamount = finduser?.item?.reduce((acc: any, i: any) => acc + i.price, 0)
-        finduser.totalquantity = finduser?.item?.reduce((acc: any, i: any) => acc + i.quantity, 0)
+        recall(finduser)
         await finduser.save()
         return res.status(200).json({ status: "true", data: finduser })
     }
@@ -166,18 +161,12 @@ const deletecart = async (req: Request, res: Response) => {
         const newuser = await ProductUser.findById(userid).select("cart")
         const removeproduct = await Carts.findOne({ user: userid })
         if (removeproduct) {
-            removeproduct.item = await removeproduct.item.filter((details: any) => details.productid.toString() !== productid)
-            // await ProductUser.findByIdAndUpdate(userid, {$pull: {cart:removeproduct._id}},{new:true})
+            removeproduct.item =  removeproduct.item.filter((details: any) => details.productid.toString() !== productid)
         }
         if (!removeproduct) return res.status(400).json({ message: "product not found" })
 
-        removeproduct.totalamount = removeproduct?.item?.reduce((acc: any, i: any) => acc + i.price, 0)
-        removeproduct.totalquantity = removeproduct?.item?.reduce((acc: any, i: any) => acc + i.quantity, 0)
+        recall(removeproduct)
         await removeproduct.save()
-
-
-        // const removeproduct = await ProductUser.findByIdAndUpdate(userid, {$set: {cart:[]}}, {new:true})
-        // if(!removeproduct) return res.status(400).json({status:"false", message: "id not found"})
         return res.status(200).json({ sttaus: "true", message: "cart delete", data: removeproduct, newuser })
     }
     catch (err: any) {
