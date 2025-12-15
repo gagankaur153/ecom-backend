@@ -63,27 +63,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const comparePassword = yield bcrypt_1.default.compare(password, existingEmail.password);
         if (!comparePassword)
             return res.status(400).json({ message: "Invalid credentials" });
-        const token = jsonwebtoken_1.default.sign({
+        const tokennnn = jsonwebtoken_1.default.sign({
             id: existingEmail._id,
             email: existingEmail.email, username: existingEmail.username, role: existingEmail.role
-        }, tokenn, {
-            expiresIn: '7d'
-        });
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            path: "/",
-            maxAge: 7 * 60 * 60 * 1000,
-        });
-        //   res.cookie('token', token,{
-        //     httpOnly: true,
-        //     secure: false,
-        //     sameSite: "none",
-        //     path: "/",
-        //    maxAge:  7 * 60 * 60 * 1000
-        //  })
-        return res.status(200).json({ status: true, message: "User registered successfully", token: token, role: existingEmail.role });
+        }, "hfgfhgh");
+        console.log(tokennnn);
+        // return res.status(200).json({ status: true, message: "User registered successfully", token: tokennnn, role: existingEmail.role });
     }
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });
@@ -121,12 +106,6 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const logout = yield user_1.default.findById(userid);
         if (!logout)
             return res.status(400).json({ status: "false", message: "id not found" });
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            path: "/",
-        });
         return res.status(200).json({ status: true, message: "logout sucessfully" });
     }
     catch (err) {
