@@ -66,9 +66,8 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const tokennnn = jsonwebtoken_1.default.sign({
             id: existingEmail._id,
             email: existingEmail.email, username: existingEmail.username, role: existingEmail.role
-        }, "hfgfhgh");
-        console.log(tokennnn);
-        // return res.status(200).json({ status: true, message: "User registered successfully", token: tokennnn, role: existingEmail.role });
+        }, tokenn);
+        return res.status(200).json({ status: true, message: "User registered successfully", token: tokennnn, role: existingEmail.role });
     }
     catch (err) {
         return res.status(500).json({ status: false, message: err.message });

@@ -11,13 +11,11 @@ const tokenn = process.env.TOKEN;
 const authmiddleware = (req, res, next) => {
     try {
         const authheader = req.headers.authorization;
-        console.log("authheader", authheader);
         if (!authheader)
             return res.status(400).json({ status: "false", message: "token expire" });
         if (!authheader.startsWith("Bearer "))
             return res.status(400).json({ status: "false", message: "bearer missing" });
         const token = authheader.split(" ")[1];
-        console.log("token", token);
         const verify = jsonwebtoken_1.default.verify(token, tokenn);
         if (!verify)
             return res.status(400).json({ message: "token not verfied" });

@@ -16,13 +16,17 @@ exports.updateAllProduct = exports.deletecart = exports.quantityincrease = expor
 const user_1 = __importDefault(require("../models/user"));
 const product_1 = __importDefault(require("../models/product"));
 const cart_1 = __importDefault(require("../models/cart"));
+//recall function
+const recall = ((cart) => {
+    cart.totalquantity = cart.item.reduce((acc, i) => acc + i.quantity, 0);
+    cart.totalamount = cart.item.reduce((acc, i) => acc + i.price, 0);
+});
 // product add to cart
 const addcart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const { productid } = req.params;
-        //    console.log(productid)
         const finduser = yield user_1.default.findById(userid);
         const product = yield product_1.default.findById(productid);
         if (!finduser)
@@ -63,16 +67,11 @@ const addcart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 quantity: 1,
                 image: product.image,
             });
-            cart.totalamount = cart.item.reduce((acc, items) => acc + items.price, 0);
-            cart.totalquantity = cart.item.reduce((acc, items) => acc + items.quantity, 0);
+            recall(cart);
             yield cart.save();
             return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
         }
-        cart.totalamount = cart.item.reduce((acc, items) => acc + items.price, 0);
-        cart.totalquantity = cart.item.reduce((acc, items) => acc + items.quantity, 0);
-        if (isNaN(cart.totalamount)) {
-            throw new Error("total amount is invalid(NAN)");
-        }
+        recall(cart);
         yield cart.save();
         return res.status(200).json({ status: true, data: cart, message: "item increase to cart" });
     }
@@ -102,7 +101,7 @@ const allcart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.allcart = allcart;
 // quantity decrease
 const quantitydecrease = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const { productid } = req.params;
@@ -110,7 +109,6 @@ const quantitydecrease = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.status(400).json({ status: false, message: "product id not found" });
         const newuser = yield user_1.default.findById(userid).select("cart");
         const finduser = yield cart_1.default.findOne({ user: userid }).populate("item.productid");
-        console.log(finduser);
         if (!finduser)
             return res.status(400).json({ status: false, message: "id not found" });
         const checkproduct = finduser.item.find((items) => items.productid._id.toString() === productid);
@@ -125,8 +123,7 @@ const quantitydecrease = (req, res) => __awaiter(void 0, void 0, void 0, functio
             yield user_1.default.findByIdAndUpdate(userid, { $pull: { cart: finduser._id } }, { new: true });
         }
         console.log("totalamount", finduser.totalamount);
-        finduser.totalamount = (_c = finduser === null || finduser === void 0 ? void 0 : finduser.item) === null || _c === void 0 ? void 0 : _c.reduce((acc, i) => acc + i.price, 0);
-        finduser.totalquantity = (_d = finduser === null || finduser === void 0 ? void 0 : finduser.item) === null || _d === void 0 ? void 0 : _d.reduce((acc, i) => acc + i.quantity, 0);
+        recall(finduser);
         yield finduser.save();
         return res.status(200).json({ status: "true", data: finduser, newuser });
     }
@@ -138,7 +135,7 @@ const quantitydecrease = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.quantitydecrease = quantitydecrease;
 // quantity increase
 const quantityincrease = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const { productid } = req.params;
@@ -154,8 +151,7 @@ const quantityincrease = (req, res) => __awaiter(void 0, void 0, void 0, functio
             checkproduct.quantity += 1;
             checkproduct.price = (checkproduct === null || checkproduct === void 0 ? void 0 : checkproduct.quantity) * ((_b = checkproduct === null || checkproduct === void 0 ? void 0 : checkproduct.productid) === null || _b === void 0 ? void 0 : _b.price);
         }
-        finduser.totalamount = (_c = finduser === null || finduser === void 0 ? void 0 : finduser.item) === null || _c === void 0 ? void 0 : _c.reduce((acc, i) => acc + i.price, 0);
-        finduser.totalquantity = (_d = finduser === null || finduser === void 0 ? void 0 : finduser.item) === null || _d === void 0 ? void 0 : _d.reduce((acc, i) => acc + i.quantity, 0);
+        recall(finduser);
         yield finduser.save();
         return res.status(200).json({ status: "true", data: finduser });
     }
@@ -167,23 +163,19 @@ const quantityincrease = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.quantityincrease = quantityincrease;
 // delete per product
 const deletecart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const { productid } = req.params;
         const newuser = yield user_1.default.findById(userid).select("cart");
         const removeproduct = yield cart_1.default.findOne({ user: userid });
         if (removeproduct) {
-            removeproduct.item = yield removeproduct.item.filter((details) => details.productid.toString() !== productid);
-            // await ProductUser.findByIdAndUpdate(userid, {$pull: {cart:removeproduct._id}},{new:true})
+            removeproduct.item = removeproduct.item.filter((details) => details.productid.toString() !== productid);
         }
         if (!removeproduct)
             return res.status(400).json({ message: "product not found" });
-        removeproduct.totalamount = (_b = removeproduct === null || removeproduct === void 0 ? void 0 : removeproduct.item) === null || _b === void 0 ? void 0 : _b.reduce((acc, i) => acc + i.price, 0);
-        removeproduct.totalquantity = (_c = removeproduct === null || removeproduct === void 0 ? void 0 : removeproduct.item) === null || _c === void 0 ? void 0 : _c.reduce((acc, i) => acc + i.quantity, 0);
+        recall(removeproduct);
         yield removeproduct.save();
-        // const removeproduct = await ProductUser.findByIdAndUpdate(userid, {$set: {cart:[]}}, {new:true})
-        // if(!removeproduct) return res.status(400).json({status:"false", message: "id not found"})
         return res.status(200).json({ sttaus: "true", message: "cart delete", data: removeproduct, newuser });
     }
     catch (err) {

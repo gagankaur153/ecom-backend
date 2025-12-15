@@ -42,6 +42,7 @@ app.use("/product", productroute_1.default);
 app.use("/cart", cartroutes_1.default);
 app.use("/payment", paymentroute_1.default);
 app.use('/address', addressroute_1.default);
+console.log("token change");
 mongoose_1.default.connect(process.env.CONNECT)
     .then(() => { console.log("mongoose connected"); })
     .catch(() => { console.log("not connected"); });
