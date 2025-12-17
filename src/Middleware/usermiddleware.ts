@@ -8,9 +8,10 @@ const tokenn = process.env.TOKEN as string
 
 const authmiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.cookies?.cookietoken
-        if (!token) return res.status(400).json({ status: "false", message: "token expire" })
-   
+        const token = req.headers.authorization?.split(" ")[1] || req.cookies?.cookietoken
+        console.log("authtoken", token)
+        if (!token) return res.status(400).json({ status: "false", message: "token not found" })
+     
         const verify = jwt.verify(token, tokenn)   as MyjwtPayload
         if (!verify) return res.status(400).json({ message: "token not verfied" })
         req.user = verify
