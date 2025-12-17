@@ -24,7 +24,7 @@ const authmiddleware = (req: Request, res: Response, next: NextFunction) => {
             sameSite: "none",
             path: "/",
           });
-          res.clearCookie("token" , {
+          res.clearCookie("tokennn" , {
             httpOnly: true,
             secure: true,
             sameSite: "none",
