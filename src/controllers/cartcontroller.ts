@@ -55,6 +55,7 @@ const addcart = async (req: Request, res: Response) => {
             })
            recall(cart)
             await cart.save()
+            await ProductUser.findByIdAndUpdate(userid, { $push: { cart: cart._id } }, { new: true })
             return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
         }
         recall(cart)
@@ -159,7 +160,9 @@ const deletecart = async (req: Request, res: Response) => {
         const userid = req.user?.id
         const { productid } = req.params
         const newuser = await ProductUser.findById(userid).select("cart")
+        console.log("newuser", newuser)
         const removeproduct = await Carts.findOne({ user: userid })
+        console.log("remove product", removeproduct)
         if (removeproduct) {
             removeproduct.item =  removeproduct.item.filter((details: any) => details.productid.toString() !== productid)
         }
@@ -176,6 +179,7 @@ const deletecart = async (req: Request, res: Response) => {
 }
 
 // delete all product
+
 const updateAllProduct = async (req: Request, res: Response) => {
     try {
         const userid = req.user?.id

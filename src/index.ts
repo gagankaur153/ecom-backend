@@ -26,6 +26,7 @@ const allowedOrigins = [
     "https://ecom-frontend-seven-rose.vercel.app",
     "http://localhost:5173"
 ]
+
 app.use(cors({
     origin: function (origin: any, callback: any) {
         if (!origin) return callback(null, true); // Postman या server-to-server requests के लिए

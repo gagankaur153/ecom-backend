@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import ProductUser from '../models/user';
 import jwt from 'jsonwebtoken'
 import { Request, Response } from 'express'
+import cookie from 'cookie-parser';
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -54,11 +55,22 @@ const login = async (req: Request, res: Response) => {
     const comparePassword = await bcrypt.compare(password, existingEmail.password);
     if (!comparePassword) return res.status(400).json({ message: "Invalid credentials" });
 
-    const tokennnn = jwt.sign({
+    const token = jwt.sign({
       id: existingEmail._id,
-      email: existingEmail.email, username: existingEmail.username, role: existingEmail.role
-    }, tokenn)
-    return res.status(200).json({ status: true, message: "User registered successfully", token: tokennnn, role: existingEmail.role });
+      email: existingEmail.email,
+      username: existingEmail.username, 
+     role: existingEmail.role
+    }, tokenn,{
+      expiresIn: "2d"
+    })
+    res.cookie("cookietoken", token ,{
+      httpOnly: true,
+      secure: true,
+     sameSite: "none" ,
+      path: '/',
+      maxAge: 2 * 24 * 60 * 60 * 1000
+    })
+    return res.status(200).json({ status: true, message: "User registered successfully", token: token, role: existingEmail.role });
 
   } catch (err: any) {
     return res.status(500).json({ status: false, message: err.message });
@@ -93,6 +105,12 @@ const logout = async (req: Request, res: Response) => {
     const userid = req.user?.id
     const logout = await ProductUser.findById(userid)
     if (!logout) return res.status(400).json({ status: "false", message: "id not found" })
+    res.clearCookie("cookietoken",{
+      httpOnly: true,
+      secure: true,
+     sameSite: "none" ,
+      path: '/',
+    })
     return res.status(200).json({ status: true, message: "logout sucessfully" });
   }
   catch (err: any) {
