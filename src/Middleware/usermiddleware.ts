@@ -10,7 +10,8 @@ const authmiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.cookies?.token
         console.log("authtoken", token)
-        if (!token) return res.status(400).json({ status: "false", message: "token not found" })
+        if(!token) res.clearCookie("token" || "cookietoken")
+        if (!token) return res.status(400).json({ status: "false", message: "session expires! login again" })
      
         const verify = jwt.verify(token, tokenn)   as MyjwtPayload
         if (!verify) return res.status(400).json({ message: "token not verfied" })
