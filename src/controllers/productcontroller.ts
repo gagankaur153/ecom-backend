@@ -39,7 +39,7 @@ const getallproduct = async (req: Request, res: Response) => {
                 ]
             }
         }
-        const getallproduct = await Products.find(searchcreteria).sort({ createdAt: -1 })
+        const getallproduct = await Products.find(searchcreteria).sort({ updatedAt: -1 })
         return res.status(200).json({ status: true, data: getallproduct })
 
     }
@@ -72,7 +72,7 @@ const updateproduct = async (req: Request, res: Response) => {
         if (!checkuser) return res.status(400).json({ status: false, message: "user not found" })
         const body = req.body || {}
         if (!body.category || !body?.title || !body?.price || !body.description) return res.status(400).json({ status: false, message: "All fields are required" })
-        const image = req.file ? req.file?.path : ""
+        const image = req.file && req.file?.path 
         const payload = {
             category: body.category,
             title: body.title,

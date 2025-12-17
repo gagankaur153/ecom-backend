@@ -16,7 +16,7 @@ const productSchema = new Schema<Iproduct>(
         price: { type: Number },
         description: { type: String },
         image: { type: String }
-    })
+    }, {timestamps:true})
 
 const Products = model<Iproduct>("Products", productSchema)
 
