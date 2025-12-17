@@ -63,7 +63,7 @@ const login = async (req: Request, res: Response) => {
     }, tokenn,{
       expiresIn: "2d"
     })
-    res.cookie("token", token ,{
+    res.cookie("tokennn", token ,{
       httpOnly: true,
       secure: true,
      sameSite: "none" ,
@@ -105,7 +105,7 @@ const logout = async (req: Request, res: Response) => {
     const userid = req.user?.id
     const logout = await ProductUser.findById(userid)
     if (!logout) return res.status(400).json({ status: "false", message: "id not found" })
-    res.clearCookie("token",{
+    res.clearCookie("tokennn",{
       httpOnly: true,
       secure: true,
      sameSite: "none" ,
