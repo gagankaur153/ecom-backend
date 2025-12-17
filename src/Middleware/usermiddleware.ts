@@ -8,7 +8,7 @@ const tokenn = process.env.TOKEN as string
 
 const authmiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1] || req.cookies?.cookietoken
+        const token = req.cookies?.token
         console.log("authtoken", token)
         if (!token) return res.status(400).json({ status: "false", message: "token not found" })
      
