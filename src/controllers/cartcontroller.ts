@@ -18,8 +18,6 @@ const addcart = async (req: Request, res: Response) => {
         if (!finduser) return res.status(400).json({ status: "false", message: "userid not found" })
         if (finduser.role == "admin") return res.status(400).json({ status: "false", message: "you are elegible to add cart because your role is admin" })
         if (!product) return res.status(400).json({ status: "false", message: "product not found" })
-
-
         //    check exist product or not
         let cart = await Carts.findOne({ user: userid })
         if (!cart) {
@@ -37,7 +35,8 @@ const addcart = async (req: Request, res: Response) => {
                 totalquantity: 1,
             })
             await cart.save()
-            await ProductUser.findByIdAndUpdate(userid, { $push: { cart: cart._id } }, { new: true })
+            const itemlength = cart?.item[cart?.item?.length-1]?._id
+            await ProductUser.findByIdAndUpdate(userid, { $push: { cart: itemlength} }, { new: true })
             return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
         }
         const itemindex = cart.item.findIndex((itemm: any) =>
@@ -55,13 +54,15 @@ const addcart = async (req: Request, res: Response) => {
             })
            recall(cart)
             await cart.save()
-            await ProductUser.findByIdAndUpdate(userid, { $push: { cart: cart._id } }, { new: true })
-            return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
+            const itemlength = cart?.item[cart?.item?.length-1]?._id
+            console.log("itemlength", itemlength)
+            await ProductUser.findByIdAndUpdate(userid, { $push: { cart: itemlength} }, { new: true })
+            return res.status(200).json({ status: true, data: {cart,finduser}, message: "item add to cart" });
         }
         recall(cart)
 
         await cart.save()
-        return res.status(200).json({ status: true, data: cart, message: "item increase to cart" });
+        return res.status(200).json({ status: true, data: cart, finduser, message: "item increase to cart" });
     }
     catch (err: any) {
         console.log(err)
@@ -108,7 +109,7 @@ const quantitydecrease = async (req: Request, res: Response) => {
         }
         else {
             finduser.item = finduser.item.filter((item: any) => item.productid._id.toString() !== productid)
-            await ProductUser.findByIdAndUpdate(userid, { $pull: { cart: finduser._id } }, { new: true })
+            await ProductUser.findByIdAndUpdate(userid, { $pull: { cart: productid} }, { new: true })
         }
         console.log("totalamount", finduser.totalamount)
         recall(finduser)
@@ -158,19 +159,19 @@ const quantityincrease = async (req: Request, res: Response) => {
 const deletecart = async (req: Request, res: Response) => {
     try {
         const userid = req.user?.id
-        const { productid } = req.params
+        const {cartid} = req.params
+        console.log( "cartid", cartid)
         const newuser = await ProductUser.findById(userid).select("cart")
-        console.log("newuser", newuser)
         const removeproduct = await Carts.findOne({ user: userid })
-        console.log("remove product", removeproduct)
-        if (removeproduct) {
-            removeproduct.item =  removeproduct.item.filter((details: any) => details.productid.toString() !== productid)
-        }
-        if (!removeproduct) return res.status(400).json({ message: "product not found" })
-
+        if (!removeproduct) return res.status(400).json({ message: "cart not found" })
+      
+         removeproduct.item =  removeproduct.item.filter((details: any) => details._id.toString() !==  cartid)
+        
         recall(removeproduct)
+        console.log("remove product", removeproduct)
+        await ProductUser.findByIdAndUpdate(userid, {$pull: {cart: cartid}}, {new:true})
         await removeproduct.save()
-        return res.status(200).json({ sttaus: "true", message: "cart delete", data: removeproduct, newuser })
+        return res.status(200).json({ status: true, message: "cart delete", data: removeproduct, newuser })
     }
     catch (err: any) {
         console.log(err)
@@ -183,8 +184,7 @@ const deletecart = async (req: Request, res: Response) => {
 const updateAllProduct = async (req: Request, res: Response) => {
     try {
         const userid = req.user?.id
-
-        const clearcart = await Carts.findOneAndUpdate({ user: userid }, { $set: { item: [], totalamount: 0, totalquantity: 0 } })
+        const clearcart = await Carts.findOneAndUpdate({ user: userid }, { $set: { item: [], totalamount: 0, totalquantity: 0 } }, {new: true})
         if (!clearcart) {
             return res.status(400).json({ status: "false", message: "cart not find" })
         }
@@ -192,7 +192,7 @@ const updateAllProduct = async (req: Request, res: Response) => {
         if (!usercart) {
             return res.status(400).json({ status: "false", message: "user cart not find" })
         }
-        return res.status(200).json({ status: "true", data: clearcart, message: "cart is empty" })
+        return res.status(200).json({ status: "true", data: clearcart, data2: usercart , message : "cart is empty" })
     }
     catch (err: any) {
         console.log(err)

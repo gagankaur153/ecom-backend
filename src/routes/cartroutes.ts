@@ -11,7 +11,7 @@ router.put('/decrease/:productid', authmiddleware, quantitydecrease)
 
 router.put('/increase/:productid', authmiddleware, quantityincrease)
 
-router.put('/removecart/:productid', authmiddleware, deletecart)
+router.put('/removecart/:cartid', authmiddleware, deletecart)
 
 router.put('/deletecart', authmiddleware, updateAllProduct)
 

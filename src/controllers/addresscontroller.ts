@@ -9,8 +9,6 @@ const addaddress = async (req: Request, res: Response) => {
     if (!userid) return res.status(400).json({ status: false, message: "user id not find" });
     const { fullname, country, state, city, pincode, address } = req.body || {}
     if (!fullname || !country || !state || !city || !pincode || !address) return res.status(400).json({ status: false, message: "all fields are required" })
-
-
     const addresses = new Address({
       user: userid,
       fullname,
