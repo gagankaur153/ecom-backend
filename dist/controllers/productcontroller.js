@@ -55,7 +55,7 @@ const getallproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 ]
             };
         }
-        const getallproduct = yield product_1.default.find(searchcreteria).sort({ createdAt: -1 });
+        const getallproduct = yield product_1.default.find(searchcreteria).sort({ updatedAt: -1 });
         return res.status(200).json({ status: true, data: getallproduct });
     }
     catch (err) {
@@ -91,7 +91,7 @@ const updateproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const body = req.body || {};
         if (!body.category || !(body === null || body === void 0 ? void 0 : body.title) || !(body === null || body === void 0 ? void 0 : body.price) || !body.description)
             return res.status(400).json({ status: false, message: "All fields are required" });
-        const image = req.file ? (_b = req.file) === null || _b === void 0 ? void 0 : _b.path : "";
+        const image = req.file && ((_b = req.file) === null || _b === void 0 ? void 0 : _b.path);
         const payload = {
             category: body.category,
             title: body.title,

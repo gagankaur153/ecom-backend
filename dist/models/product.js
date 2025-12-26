@@ -7,6 +7,6 @@ const productSchema = new mongoose_1.Schema({
     price: { type: Number },
     description: { type: String },
     image: { type: String }
-});
+}, { timestamps: true });
 const Products = (0, mongoose_1.model)("Products", productSchema);
 exports.default = Products;

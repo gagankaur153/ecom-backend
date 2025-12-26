@@ -9,13 +9,11 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const tokenn = process.env.TOKEN;
 const authmiddleware = (req, res, next) => {
+    var _a;
     try {
-        const authheader = req.headers.authorization;
-        if (!authheader)
-            return res.status(400).json({ status: "false", message: "token expire" });
-        if (!authheader.startsWith("Bearer "))
-            return res.status(400).json({ status: "false", message: "bearer missing" });
-        const token = authheader.split(" ")[1];
+        const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;
+        if (!token)
+            return res.status(400).json({ status: "false", message: "session expires! login again" });
         const verify = jsonwebtoken_1.default.verify(token, tokenn);
         if (!verify)
             return res.status(400).json({ message: "token not verfied" });
@@ -24,6 +22,18 @@ const authmiddleware = (req, res, next) => {
     }
     catch (err) {
         console.log(err);
+        res.clearCookie("cookietoken", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            path: "/",
+        });
+        res.clearCookie("tokennn", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            path: "/",
+        });
         return res.status(500).json({ status: false, message: err.message });
     }
 };

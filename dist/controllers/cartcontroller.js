@@ -23,7 +23,7 @@ const recall = ((cart) => {
 });
 // product add to cart
 const addcart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c, _d, _e;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const { productid } = req.params;
@@ -52,7 +52,8 @@ const addcart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 totalquantity: 1,
             });
             yield cart.save();
-            yield user_1.default.findByIdAndUpdate(userid, { $push: { cart: cart._id } }, { new: true });
+            const itemlength = (_c = cart === null || cart === void 0 ? void 0 : cart.item[((_b = cart === null || cart === void 0 ? void 0 : cart.item) === null || _b === void 0 ? void 0 : _b.length) - 1]) === null || _c === void 0 ? void 0 : _c._id;
+            yield user_1.default.findByIdAndUpdate(userid, { $push: { cart: itemlength } }, { new: true });
             return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
         }
         const itemindex = cart.item.findIndex((itemm) => itemm.productid.toString() === productid);
@@ -69,11 +70,14 @@ const addcart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             });
             recall(cart);
             yield cart.save();
-            return res.status(200).json({ status: true, data: cart, message: "item add to cart" });
+            const itemlength = (_e = cart === null || cart === void 0 ? void 0 : cart.item[((_d = cart === null || cart === void 0 ? void 0 : cart.item) === null || _d === void 0 ? void 0 : _d.length) - 1]) === null || _e === void 0 ? void 0 : _e._id;
+            console.log("itemlength", itemlength);
+            yield user_1.default.findByIdAndUpdate(userid, { $push: { cart: itemlength } }, { new: true });
+            return res.status(200).json({ status: true, data: { cart, finduser }, message: "item add to cart" });
         }
         recall(cart);
         yield cart.save();
-        return res.status(200).json({ status: true, data: cart, message: "item increase to cart" });
+        return res.status(200).json({ status: true, data: cart, finduser, message: "item increase to cart" });
     }
     catch (err) {
         console.log(err);
@@ -120,7 +124,7 @@ const quantitydecrease = (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
         else {
             finduser.item = finduser.item.filter((item) => item.productid._id.toString() !== productid);
-            yield user_1.default.findByIdAndUpdate(userid, { $pull: { cart: finduser._id } }, { new: true });
+            yield user_1.default.findByIdAndUpdate(userid, { $pull: { cart: productid } }, { new: true });
         }
         console.log("totalamount", finduser.totalamount);
         recall(finduser);
@@ -166,17 +170,18 @@ const deletecart = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     var _a;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
-        const { productid } = req.params;
+        const { cartid } = req.params;
+        console.log("cartid", cartid);
         const newuser = yield user_1.default.findById(userid).select("cart");
         const removeproduct = yield cart_1.default.findOne({ user: userid });
-        if (removeproduct) {
-            removeproduct.item = removeproduct.item.filter((details) => details.productid.toString() !== productid);
-        }
         if (!removeproduct)
-            return res.status(400).json({ message: "product not found" });
+            return res.status(400).json({ message: "cart not found" });
+        removeproduct.item = removeproduct.item.filter((details) => details._id.toString() !== cartid);
         recall(removeproduct);
+        console.log("remove product", removeproduct);
+        yield user_1.default.findByIdAndUpdate(userid, { $pull: { cart: cartid } }, { new: true });
         yield removeproduct.save();
-        return res.status(200).json({ sttaus: "true", message: "cart delete", data: removeproduct, newuser });
+        return res.status(200).json({ status: true, message: "cart delete", data: removeproduct, newuser });
     }
     catch (err) {
         console.log(err);
@@ -189,7 +194,7 @@ const updateAllProduct = (req, res) => __awaiter(void 0, void 0, void 0, functio
     var _a;
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
-        const clearcart = yield cart_1.default.findOneAndUpdate({ user: userid }, { $set: { item: [], totalamount: 0, totalquantity: 0 } });
+        const clearcart = yield cart_1.default.findOneAndUpdate({ user: userid }, { $set: { item: [], totalamount: 0, totalquantity: 0 } }, { new: true });
         if (!clearcart) {
             return res.status(400).json({ status: "false", message: "cart not find" });
         }
@@ -197,7 +202,7 @@ const updateAllProduct = (req, res) => __awaiter(void 0, void 0, void 0, functio
         if (!usercart) {
             return res.status(400).json({ status: "false", message: "user cart not find" });
         }
-        return res.status(200).json({ status: "true", data: clearcart, message: "cart is empty" });
+        return res.status(200).json({ status: "true", data: clearcart, data2: usercart, message: "cart is empty" });
     }
     catch (err) {
         console.log(err);

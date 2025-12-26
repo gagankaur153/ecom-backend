@@ -50,11 +50,11 @@ app.use("/payment", paymentroute)
 app.use('/address', addressroute)
 
 console.log("token change")
+app.get('/health', (req,res)=> res.json("server is awake all"))
+app.get('/', (req, res) => res.json("server is running on..."))
 mongoose.connect(process.env.CONNECT!)
     .then(() => { console.log("mongoose connected") })
     .catch(() => { console.log("not connected") })
-app.get('/', (req, res) => res.json("server is running on..."))
-
 app.listen(PORT, () => {
     console.log(`server is running on http://localhost:${PORT}`)
 })

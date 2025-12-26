@@ -8,6 +8,6 @@ router.post('/addcart/:productid', usermiddleware_1.authmiddleware, cartcontroll
 router.get('/allcart', usermiddleware_1.authmiddleware, cartcontroller_1.allcart);
 router.put('/decrease/:productid', usermiddleware_1.authmiddleware, cartcontroller_1.quantitydecrease);
 router.put('/increase/:productid', usermiddleware_1.authmiddleware, cartcontroller_1.quantityincrease);
-router.put('/removecart/:productid', usermiddleware_1.authmiddleware, cartcontroller_1.deletecart);
+router.put('/removecart/:cartid', usermiddleware_1.authmiddleware, cartcontroller_1.deletecart);
 router.put('/deletecart', usermiddleware_1.authmiddleware, cartcontroller_1.updateAllProduct);
 exports.default = router;
