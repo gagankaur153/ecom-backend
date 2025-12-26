@@ -111,7 +111,6 @@ const quantitydecrease = async (req: Request, res: Response) => {
             finduser.item = finduser.item.filter((item: any) => item.productid._id.toString() !== productid)
             await ProductUser.findByIdAndUpdate(userid, { $pull: { cart: productid} }, { new: true })
         }
-        console.log("totalamount", finduser.totalamount)
         recall(finduser)
         await finduser.save()
         return res.status(200).json({ status: "true", data: finduser, newuser })

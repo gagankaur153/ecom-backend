@@ -126,7 +126,6 @@ const quantitydecrease = (req, res) => __awaiter(void 0, void 0, void 0, functio
             finduser.item = finduser.item.filter((item) => item.productid._id.toString() !== productid);
             yield user_1.default.findByIdAndUpdate(userid, { $pull: { cart: productid } }, { new: true });
         }
-        console.log("totalamount", finduser.totalamount);
         recall(finduser);
         yield finduser.save();
         return res.status(200).json({ status: "true", data: finduser, newuser });
