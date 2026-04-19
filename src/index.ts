@@ -1,7 +1,9 @@
 require('dotenv').config();
 
 import express, { Application } from 'express'
+import dns from "node:dns";
 
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 import mongoose from 'mongoose'
 import cors from 'cors'
 import cookieparser from 'cookie-parser'
