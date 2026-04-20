@@ -16,7 +16,7 @@ const storage = new CloudinaryStorage({
     params: async (req: Request, file: Express.Multer.File) => {
         return {
             folder: "ecom",
-            allowed_formats: ["jpg", "jpeg", "png"],
+            allowed_formats: ["jpg", "jpeg", "png", "webp"],
             public_id: file.originalname.split('.')[0]
         }
     }
