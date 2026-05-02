@@ -170,14 +170,12 @@ const deletecart = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const userid = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const { cartid } = req.params;
-        console.log("cartid", cartid);
         const newuser = yield user_1.default.findById(userid).select("cart");
         const removeproduct = yield cart_1.default.findOne({ user: userid });
         if (!removeproduct)
             return res.status(400).json({ message: "cart not found" });
         removeproduct.item = removeproduct.item.filter((details) => details._id.toString() !== cartid);
         recall(removeproduct);
-        console.log("remove product", removeproduct);
         yield user_1.default.findByIdAndUpdate(userid, { $pull: { cart: cartid } }, { new: true });
         yield removeproduct.save();
         return res.status(200).json({ status: true, message: "cart delete", data: removeproduct, newuser });

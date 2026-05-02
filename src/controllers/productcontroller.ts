@@ -1,6 +1,24 @@
 import Products from '../models/product'
 import ProductUser from '../models/user'
 import { Request, Response } from 'express'
+import dummyProducts from '../data/dummyproducts'
+
+const getMissingDummyProducts = async () => {
+    const existingProducts = await Products.find({
+        title: { $in: dummyProducts.map((product) => product.title) }
+    }).select("title")
+    const existingTitles = new Set(existingProducts.map((product) => product.title))
+
+    return dummyProducts.filter((product) => !existingTitles.has(product.title))
+}
+
+const seedMissingDummyProducts = async () => {
+    const productsToCreate = await getMissingDummyProducts()
+    if (productsToCreate.length === 0) return []
+
+    return Products.insertMany(productsToCreate)
+}
+
 // add Product
 const addproduct = async (req: Request, res: Response) => {
     try {
@@ -22,13 +40,17 @@ const addproduct = async (req: Request, res: Response) => {
         return res.status(200).json({ status: true, data: payload, message: "product added successfully" })
     }
     catch (err: any) {
-        return res.status(500).json({ status: false, message: err.message });
+        return res.status(500).json({ status: false, message: err});
     }
 }
 
 // get all products
 const getallproduct = async (req: Request, res: Response) => {
     try {
+        if (!req.query.search) {
+            await seedMissingDummyProducts()
+        }
+
         const search = req.query.search || ""
         let searchcreteria = {}
         if (search) {
@@ -102,11 +124,29 @@ const deleteproduct = async (req: Request, res: Response) => {
     }
 }
 
+// add dummy products
+const seedDummyProducts = async (req: Request, res: Response) => {
+    try {
+        const productsToCreate = await getMissingDummyProducts()
+
+        if (productsToCreate.length === 0) {
+            return res.status(200).json({ status: true, data: [], message: "dummy products already added" })
+        }
+
+        const createdProducts = await Products.insertMany(productsToCreate)
+        return res.status(200).json({ status: true, data: createdProducts, message: "dummy products added successfully" })
+    }
+    catch (err: any) {
+        return res.status(500).json({ status: false, message: err.message });
+    }
+}
+
 
 export {
     addproduct,
     getallproduct,
     getsingleproduct,
     updateproduct,
-    deleteproduct
+    deleteproduct,
+    seedDummyProducts
 }

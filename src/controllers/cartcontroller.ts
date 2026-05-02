@@ -159,7 +159,6 @@ const deletecart = async (req: Request, res: Response) => {
     try {
         const userid = req.user?.id
         const {cartid} = req.params
-        console.log( "cartid", cartid)
         const newuser = await ProductUser.findById(userid).select("cart")
         const removeproduct = await Carts.findOne({ user: userid })
         if (!removeproduct) return res.status(400).json({ message: "cart not found" })
@@ -167,7 +166,7 @@ const deletecart = async (req: Request, res: Response) => {
          removeproduct.item =  removeproduct.item.filter((details: any) => details._id.toString() !==  cartid)
         
         recall(removeproduct)
-        console.log("remove product", removeproduct)
+        
         await ProductUser.findByIdAndUpdate(userid, {$pull: {cart: cartid}}, {new:true})
         await removeproduct.save()
         return res.status(200).json({ status: true, message: "cart delete", data: removeproduct, newuser })

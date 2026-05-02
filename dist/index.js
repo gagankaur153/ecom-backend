@@ -14,6 +14,8 @@ const productroute_1 = __importDefault(require("./routes/productroute"));
 const cartroutes_1 = __importDefault(require("./routes/cartroutes"));
 const paymentroute_1 = __importDefault(require("./routes/paymentroute"));
 const addressroute_1 = __importDefault(require("./routes/addressroute"));
+const node_dns_1 = __importDefault(require("node:dns"));
+node_dns_1.default.setServers(["8.8.8.8", "8.8.4.4"]);
 const PORT = process.env.PORT || 9000;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
@@ -47,7 +49,7 @@ app.get('/health', (req, res) => res.json("server is awake all"));
 app.get('/', (req, res) => res.json("server is running on..."));
 mongoose_1.default.connect(process.env.CONNECT)
     .then(() => { console.log("mongoose connected"); })
-    .catch(() => { console.log("not connected"); });
+    .catch((err) => { console.error(err); });
 app.listen(PORT, () => {
     console.log(`server is running on http://localhost:${PORT}`);
 });

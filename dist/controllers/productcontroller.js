@@ -12,9 +12,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteproduct = exports.updateproduct = exports.getsingleproduct = exports.getallproduct = exports.addproduct = void 0;
+exports.seedDummyProducts = exports.deleteproduct = exports.updateproduct = exports.getsingleproduct = exports.getallproduct = exports.addproduct = void 0;
 const product_1 = __importDefault(require("../models/product"));
 const user_1 = __importDefault(require("../models/user"));
+const dummyproducts_1 = __importDefault(require("../data/dummyproducts"));
+const getMissingDummyProducts = () => __awaiter(void 0, void 0, void 0, function* () {
+    const existingProducts = yield product_1.default.find({
+        title: { $in: dummyproducts_1.default.map((product) => product.title) }
+    }).select("title");
+    const existingTitles = new Set(existingProducts.map((product) => product.title));
+    return dummyproducts_1.default.filter((product) => !existingTitles.has(product.title));
+});
+const seedMissingDummyProducts = () => __awaiter(void 0, void 0, void 0, function* () {
+    const productsToCreate = yield getMissingDummyProducts();
+    if (productsToCreate.length === 0)
+        return [];
+    return product_1.default.insertMany(productsToCreate);
+});
 // add Product
 const addproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
@@ -38,13 +52,16 @@ const addproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(200).json({ status: true, data: payload, message: "product added successfully" });
     }
     catch (err) {
-        return res.status(500).json({ status: false, message: err.message });
+        return res.status(500).json({ status: false, message: err });
     }
 });
 exports.addproduct = addproduct;
 // get all products
 const getallproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        if (!req.query.search) {
+            yield seedMissingDummyProducts();
+        }
         const search = req.query.search || "";
         let searchcreteria = {};
         if (search) {
@@ -121,3 +138,18 @@ const deleteproduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.deleteproduct = deleteproduct;
+// add dummy products
+const seedDummyProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const productsToCreate = yield getMissingDummyProducts();
+        if (productsToCreate.length === 0) {
+            return res.status(200).json({ status: true, data: [], message: "dummy products already added" });
+        }
+        const createdProducts = yield product_1.default.insertMany(productsToCreate);
+        return res.status(200).json({ status: true, data: createdProducts, message: "dummy products added successfully" });
+    }
+    catch (err) {
+        return res.status(500).json({ status: false, message: err.message });
+    }
+});
+exports.seedDummyProducts = seedDummyProducts;
