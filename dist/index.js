@@ -22,17 +22,19 @@ app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 const allowedOrigins = [
     "https://ecom-frontend-seven-rose.vercel.app",
+    "https://gagankaur153-ecom-frontend.vercel.app",
     "http://localhost:5173"
 ];
+const vercelPreviewOriginPattern = /^https:\/\/.*ecom-frontend.*\.vercel\.app$/;
 app.use((0, cors_1.default)({
     origin: function (origin, callback) {
         if (!origin)
             return callback(null, true); // Postman या server-to-server requests के लिए
-        if (allowedOrigins.includes(origin)) {
+        if (allowedOrigins.includes(origin) || vercelPreviewOriginPattern.test(origin)) {
             callback(null, true);
         }
         else {
-            callback(new Error("Not allowed by CORS"), false);
+            callback(null, false);
         }
     },
     credentials: true
